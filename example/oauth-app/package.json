@@ -18,6 +18,6 @@
   },
   "scripts": {
     "prepare": "rollup --config",
-    "serve": "http-server"
+    "serve": "yarn prepare && http-server"
   }
 }

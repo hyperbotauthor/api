@@ -24,7 +24,7 @@ export class Ctrl {
 
   email?: string;
 
-  constructor(private redraw: () => void) {}
+  constructor(private redraw: () => void, public homeUrl: String) {}
 
   async login() {
     // Redirect to authentication prompt.
