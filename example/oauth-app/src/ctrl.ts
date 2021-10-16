@@ -22,9 +22,12 @@ export class Ctrl {
   error?: any;
   accessContext?: AccessContext;
 
+  username?: string;
   email?: string;
 
-  constructor(private redraw: () => void, public homeUrl: String) {}
+  constructor(private redraw: () => void, public homeUrl: String) {
+    this.useApiRaw()
+  }
 
   async login() {
     // Redirect to authentication prompt.
@@ -43,7 +46,8 @@ export class Ctrl {
         // using manually using getAccessToken() and setting the
         // "Authorization: Bearer ..." header.
         const fetch = this.oauth.decorateFetchHTTPClient(window.fetch);
-        await this.useApi(fetch);
+        //await this.useApi(fetch);
+        await this.useApiRaw();
       }
     } catch (err) {
       this.error = err;
@@ -51,7 +55,7 @@ export class Ctrl {
     }
   }
 
-  async useApi(fetch: HttpClient) {
+  /*async useApi(fetch: HttpClient) {
     // Example request using @bity/oauth2-auth-code-pkce decorator:
     // Lookup email associated with the Lichess account.
     // Requests will fail with 401 Unauthorized if the access token expired
@@ -59,12 +63,35 @@ export class Ctrl {
     const res = await fetch(`${lichessHost}/api/account/email`);
     this.email = (await res.json()).email;
     this.redraw();
+  }*/
+
+  async useApiRaw() {
+    // Example request using @bity/oauth2-auth-code-pkce decorator:
+    // Lookup email associated with the Lichess account.
+    // Requests will fail with 401 Unauthorized if the access token expired
+    // or was revoked. Make sure to offer a chance to reauthenticate.
+    let res = await fetch(`${lichessHost}/api/account`, {
+      headers: {
+        Authorization: `Bearer ${this.accessContext?.token?.value || localStorage.getItem("LICHESS_TOKEN")}`
+      }
+    });
+    this.username = (await res.json()).username;
+    res = await fetch(`${lichessHost}/api/account/email`, {
+      headers: {
+        Authorization: `Bearer ${this.accessContext?.token?.value || localStorage.getItem("LICHESS_TOKEN")}`
+      }
+    });
+    this.email = (await res.json()).email;
+    this.redraw();
   }
 
   async logout() {
+    localStorage.removeItem("LICHESS_TOKEN")
+
     const token = this.accessContext?.token?.value;
     this.accessContext = undefined;
     this.error = undefined;
+    this.username = undefined;
     this.email = undefined;
     this.redraw();
 

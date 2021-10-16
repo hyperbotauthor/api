@@ -2,7 +2,7 @@ import { h, VNode } from 'snabbdom';
 import { lichessHost, clientUrl, Ctrl } from './ctrl';
 
 export function view(ctrl: Ctrl): VNode {
-  const token = ctrl.accessContext?.token?.value
+  let token = ctrl.accessContext?.token ? ctrl.accessContext?.token?.value : localStorage.getItem("LICHESS_TOKEN")
 
   if(token){
     localStorage.setItem("LICHESS_TOKEN", token)
@@ -25,7 +25,7 @@ export function view(ctrl: Ctrl): VNode {
     h('tr', [h('td', 'Client URL'), h('td', clientUrl)]),
     h('tr', [h('td', 'Error'), h('td', ctrl.error?.toString())]),    
     h('tr', [h('td', 'Access token (secret)'), h('td', token ? [
-      "token obtained  ",
+      "token available  ",
       h(
           'button',
           {            
@@ -34,6 +34,7 @@ export function view(ctrl: Ctrl): VNode {
           'Reveal token'
         ),
     ] : "no token")]),    
+    h('tr', [h('td', 'Lichess account username'), h('td', ctrl.username)]),
     h('tr', [h('td', 'Lichess account email'), h('td', ctrl.email)]),
     h('tr', [
       h('td', ''),
@@ -41,7 +42,7 @@ export function view(ctrl: Ctrl): VNode {
         h(
           'button',
           {
-            attrs: { disabled: !!ctrl.accessContext?.token },
+            attrs: { disabled: !!token },
             on: { click: () => ctrl.login() },
           },
           'Login'
@@ -50,10 +51,10 @@ export function view(ctrl: Ctrl): VNode {
         h(
           'button',
           {
-            attrs: { disabled: !ctrl.error && !ctrl.accessContext?.token },
+            attrs: { disabled: !ctrl.error && !token },
             on: { click: () => ctrl.logout() },
           },
-          ctrl.accessContext ? 'Logout' : 'Reset'
+          ctrl.accessContext || token ? 'Logout' : 'Reset'
         ),
       ]),
     ]),
